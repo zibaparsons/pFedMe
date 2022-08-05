@@ -360,7 +360,9 @@ def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iter
     plt.legend(loc='upper right')
     plt.ylabel('Training Loss')
     plt.xlabel('Global rounds')
-    plt.ylim([0.5,  1.8]) # convex
+    # plt.ylim([0.5,  1.8]) # convex
+    plt.ylim([1.0,  5.0]) # convex
+
     #plt.ylim([0.4,  1.8]) # non convex
     #plt.ylim([train_loss.min() - 0.01,  2])
     #plt.savefig(dataset.upper() + "Non_Convex_Syn_train_Com.pdf", bbox_inches="tight")
@@ -376,7 +378,8 @@ def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iter
     plt.legend(loc='lower right')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Global rounds')
-    plt.ylim([0.5,  0.86]) # convex 
+    # plt.ylim([0.5,  0.86]) # convex
+    plt.ylim([0.1, 0.9])  # convex
     #plt.savefig(dataset.upper() + "Non_Convex_Syn_test_Com.pdf", bbox_inches="tight")
     plt.savefig(dataset.upper() + "Convex_Syn_test_Com.pdf", bbox_inches="tight")
     plt.close()

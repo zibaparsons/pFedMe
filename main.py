@@ -50,6 +50,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
         if(algorithm == "PerAvg"):
             server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
+        if(algorithm == "FedSRWADMM"):
+            server = FedSRWADMM(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
 
         server.train()
         server.test()
@@ -69,8 +71,8 @@ if __name__ == "__main__":
     parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
     parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
-    parser.add_argument("--num_global_iters", type=int, default=800)
-    parser.add_argument("--local_epochs", type=int, default=20)
+    parser.add_argument("--num_global_iters", type=int, default=20)
+    parser.add_argument("--local_epochs", type=int, default=5)
     parser.add_argument("--optimizer", type=str, default="SGD")
     parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg"]) 
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")

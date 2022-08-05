@@ -36,6 +36,7 @@ class UserAVG(User):
             self.model.train()
             X, y = self.get_next_train_batch()
             self.optimizer.zero_grad()
+
             output = self.model(X)
             loss = self.loss(output, y)
             loss.backward()
