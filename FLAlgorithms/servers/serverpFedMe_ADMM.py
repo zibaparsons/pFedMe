@@ -1,14 +1,14 @@
 import torch
 import os
 
-from FLAlgorithms.users.userpFedMe import UserpFedMe
+from FLAlgorithms.users.userpFedMe_Admm import UserpFedMe_Admm
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
 import numpy as np
  
 # Implementation for pFedMe Server
 
-class pFedMe(Server):
+class pFedMe_ADMM(Server):
     def __init__(self, device,  dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
                  local_epochs, optimizer, num_users, K, personal_learning_rate, times):
         super().__init__(device, dataset,algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
@@ -21,7 +21,7 @@ class pFedMe(Server):
         self.personal_learning_rate = personal_learning_rate
         for i in range(total_users):
             id, train , test = read_user_data(i, data, dataset)
-            user = UserpFedMe(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs, optimizer, K, personal_learning_rate)
+            user = UserpFedMe_Admm(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs, optimizer, K, personal_learning_rate)
             self.users.append(user)
             self.total_train_samples += user.train_samples
         print("Number of users / total users:",num_users, " / " ,total_users)
@@ -52,7 +52,10 @@ class pFedMe(Server):
 
             # do update for all users not only selected users
             for user in self.users:
-                user.train(self.local_epochs, self.num_users) #* user.train_samples
+                # line modified by zp
+                # user.train(self.local_epochs) #* user.train_samples
+                user.train(self.local_epochs, self.num_users)
+
             
             # choose several users to send back upated model to server
             # self.personalized_evaluate()

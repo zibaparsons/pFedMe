@@ -1,28 +1,32 @@
 import torch
 import os
 
-from FLAlgorithms.users.userperavg import UserPerAvg
+from FLAlgorithms.users.userFedSRWADMM import UserFedSRWADMM
 from FLAlgorithms.servers.serverbase import Server
 from utils.model_utils import read_data, read_user_data
+import numpy as np
 
-# Implementation for per-FedAvg Server
+
+# Implementation for FedAvg Server
 
 class FedSRWADMM(Server):
-    def __init__(self,device, dataset,algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-                 local_epochs, optimizer, num_users,times):
-        super().__init__(device, dataset,algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
+    def __init__(self, device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
+                 local_epochs, optimizer, num_users, times):
+        super().__init__(device, dataset, algorithm, model[0], batch_size, learning_rate, beta, lamda, num_glob_iters,
                          local_epochs, optimizer, num_users, times)
 
         # Initialize data for all  users
         data = read_data(dataset)
         total_users = len(data[0])
         for i in range(total_users):
-            id, train , test = read_user_data(i, data, dataset)
-            user = UserFedSRWADMM(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs, optimizer ,total_users , num_users)
+            id, train, test = read_user_data(i, data, dataset)
+            user = UserFedSRWADMM(device, id, train, test, model, batch_size, learning_rate, beta, lamda, local_epochs,
+                           optimizer)
             self.users.append(user)
             self.total_train_samples += user.train_samples
-        print("Number of users / total users:",num_users, " / " ,total_users)
-        print("Finished creating Local Per-Avg.")
+
+        print("Number of users / total users:", num_users, " / ", total_users)
+        print("Finished creating FedSRWADMM server.")
 
     def send_grads(self):
         assert (self.users is not None and len(self.users) > 0)
@@ -38,21 +42,22 @@ class FedSRWADMM(Server):
     def train(self):
         loss = []
         for glob_iter in range(self.num_glob_iters):
-            print("-------------Round number: ",glob_iter, " -------------")
-            # send all parameter for users 
+            print("-------------Round number: ", glob_iter, " -------------")
+            # loss_ = 0
             self.send_parameters()
 
-            # Evaluate gloal model on user for each interation
-            print("Evaluate global model with one step update")
-            print("")
-            self.evaluate_one_step()
+            # Evaluate model each interation
+            self.evaluate()
 
-            # choose several users to send back upated model to server
-            self.selected_users = self.select_users(glob_iter,self.num_users)
+            self.selected_users = self.select_users(glob_iter, self.num_users)
             for user in self.selected_users:
-                user.train(self.local_epochs) #* user.train_samples
-                
-            self.aggregate_parameters()
+                user.train(self.local_epochs, self.num_users)  # * user.train_samples
+                # self.num_users is added by jlu
 
+            self.aggregate_parameters()
+            # loss_ /= self.total_train_samples
+            # loss.append(loss_)
+            # print(loss_)
+        # print(loss)
         self.save_results()
         self.save_model()

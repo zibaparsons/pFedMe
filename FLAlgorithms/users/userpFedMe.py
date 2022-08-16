@@ -33,7 +33,7 @@ class UserpFedMe(User):
             for idx, model_grad in enumerate(self.model.parameters()):
                 model_grad.data = new_grads[idx]
 
-    def train(self, epochs):
+    def train(self, epochs, num_users):
         LOSS = 0
         self.model.train()
         for epoch in range(1, self.local_epochs + 1):  # local update
@@ -43,18 +43,37 @@ class UserpFedMe(User):
 
             # K = 30 # K is number of personalized steps
             for i in range(self.K):
+                self.local_model_x.train()
+                local_model_x_old = copy.deepcopy(self.local_model_x)
+                local_dual_z_old = copy.deepcopy(self.local_dual_z)
                 self.optimizer.zero_grad()
-                output = self.model(X)
+                output = self.local_model_x(X)
                 loss = self.loss(output, y)
                 loss.backward()
-                self.persionalized_model_bar, _ = self.optimizer.step(self.local_model)
+                for param_x, param_x_old, param_z_old, param_y, param_z in zip(self.local_model_x.parameters(), \
+                                                                               local_model_x_old.parameters(),
+                                                                               local_dual_z_old.parameters(), \
+                                                                               self.model.parameters(),
+                                                                               self.local_dual_z.parameters()):
+                    # param_x_old.data = param_x.data
+                    # param_z_old.data = param_z.data
+
+                    param_x.data = param_y.data - self.learning_rate * param_x.grad.data
+                    param_z.data = param_z.data + 1 / self.learning_rate * (param_x.data - param_y.data)
+                    param_y.data = param_y.data + 1 / num_users * (
+                            param_x.data - param_z.data * self.learning_rate * self.beta - param_x_old.data + param_z_old.data * self.learning_rate * self.beta)
+
+            persionalized_model_bar = copy.copy(self.local_model_x)
 
             # update local weight after finding aproximate theta
-            for new_param, localweight in zip(self.persionalized_model_bar, self.local_model):
-                localweight.data = localweight.data - self.lamda* self.learning_rate * (localweight.data - new_param.data)
+            for new_param, localweight in zip(persionalized_model_bar.parameters(), self.local_model_x.parameters()):
+                localweight.data = localweight.data - self.lamda * self.learning_rate * (localweight.data - new_param.data)
+
+
+
 
         #update local model as local_weight_upated
         #self.clone_model_paramenter(self.local_weight_updated, self.local_model)
-        self.update_parameters(self.local_model)
+        self.update_parameters(self.local_model_x.parameters())
 
         return LOSS

@@ -9,16 +9,25 @@ import os
 from FLAlgorithms.servers.serveravg import FedAvg
 from FLAlgorithms.servers.serverpFedMe import pFedMe
 from FLAlgorithms.servers.serverperavg import PerAvg
+from FLAlgorithms.servers.serverfedsrwadmm import FedSRWADMM
+from FLAlgorithms.servers.serverpFedMe_ADMM import pFedMe_ADMM
 from FLAlgorithms.trainmodel.models import *
 from utils.plot_utils import *
 import torch
 torch.manual_seed(0)
+
+#added by zp
+import time
 
 def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
          local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
 
     # Get device status: Check GPU or CPU
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
+
+    # added by zp
+    start_time = time.time()
+
 
     for i in range(times):
         print("---------------Running time:------------",i)
@@ -50,11 +59,18 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
         if(algorithm == "PerAvg"):
             server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
+
         if(algorithm == "FedSRWADMM"):
+
             server = FedSRWADMM(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
+
+        if(algorithm == "pFedMe_ADMM"):
+            server = pFedMe_ADMM(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer,numusers, K, personal_learning_rate, i)
+
 
         server.train()
         server.test()
+
 
     # Average data 
     if(algorithm == "PerAvg"):
@@ -62,6 +78,13 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
     if(algorithm == "pFedMe"):
         average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
     average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms=algorithm, batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
+
+    # added by zp
+    finish_time = time.time()
+    time_diff = finish_time - start_time
+    print("---------------------------------")
+    print("The elapsed duration is: ", "{:.2f}".format(time_diff), "seconds. \n")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -74,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_global_iters", type=int, default=20)
     parser.add_argument("--local_epochs", type=int, default=5)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg"]) 
+    parser.add_argument("--algorithm", type=str, default="FedSRWADMM",choices=["pFedMe", "PerAvg", "FedAvg","FedSRWADMM","pFedMe_ADMM"])
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")

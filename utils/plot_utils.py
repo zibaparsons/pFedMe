@@ -157,8 +157,8 @@ def get_label_name(name):
         return "Per-FedAvg"
     if name.startswith("FedAvg"):
         return "FedAvg"
-    if name.startswith("APFL"):
-        return "APFL"
+    if name.startswith("FedSRWADMM"):
+        return "FedSRWADMM"
 
 def average_smooth(data, window_len=20, window='hanning'):
     results = []
@@ -354,6 +354,7 @@ def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iter
     plt.title("$\mu-$"+ "strongly convex")
     # plt.title("Nonconvex") # for non convex case
     plt.grid(True)
+
     for i in range(Numb_Algs):
         label = get_label_name(algorithms_list[i])
         plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
@@ -375,7 +376,7 @@ def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iter
     for i in range(Numb_Algs):
         label = get_label_name(algorithms_list[i])
         plt.plot(glob_acc[i, 1:], linestyle=linestyles[i],label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
-    plt.legend(loc='lower right')
+    plt.legend(loc='upper right')
     plt.ylabel('Test Accuracy')
     plt.xlabel('Global rounds')
     # plt.ylim([0.5,  0.86]) # convex
@@ -435,6 +436,62 @@ def plot_summary_one_figure_mnist_Compare(num_users, loc_ep1, Numb_Glob_Iters, l
     plt.savefig(dataset.upper() + "Convex_Mnist_test_Com.pdf", bbox_inches="tight")
     #plt.savefig(dataset.upper() + "Non_Convex_Mnist_test_Com.pdf", bbox_inches="tight")
     plt.close()
+
+# Added by ZP
+def plot_summary_one_figure_cifar10_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
+    for i in range(Numb_Algs):
+        print("max accurancy:", train_acc_[i].max())
+    glob_acc =  average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+    linestyles = ['-', '--', '-.','-', '--', '-.']
+    linestyles = ['-','-','-','-','-','-','-']
+    #linestyles = ['-','-','-','-','-','-','-']
+    markers = ["o","v","s","*","x","P"]
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'darkorange', 'tab:brown', 'm']
+    plt.figure(1,figsize=(5, 5))
+    plt.title("$\mu-$"+ "strongly convex?")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.5,  1.8]) # convex
+    plt.ylim([1.0,  5.0]) # convex
+
+    #plt.ylim([0.4,  1.8]) # non convex
+    #plt.ylim([train_loss.min() - 0.01,  2])
+    #plt.savefig(dataset.upper() + "Non_Convex_Syn_train_Com.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "_Convex_Cif_train_Com.pdf", bbox_inches="tight")
+    plt.figure(2,figsize=(5, 5))
+    plt.title("$\mu-$"+ "strongly convex?")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i],label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.5,  0.86]) # convex
+    plt.ylim([0.1, 0.9])  # convex
+    #plt.savefig(dataset.upper() + "Non_Convex_Syn_test_Com.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "_Convex_Cif_test_Com.pdf", bbox_inches="tight")
+    plt.close()
+
+
+
+
+
 
 def plot_summary_one_figure_mnist_K(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
     Numb_Algs = len(algorithms_list)   

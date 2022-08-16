@@ -14,6 +14,7 @@ class User:
     def __init__(self, device, id, train_data, test_data, model, batch_size = 0, learning_rate = 0, beta = 0 , lamda = 0, local_epochs = 0):
 
         self.device = device
+        self.model_y = copy.deepcopy(model) # global y
         self.model = copy.deepcopy(model)
         self.id = id  # integer
         self.train_samples = len(train_data)
@@ -29,9 +30,21 @@ class User:
         self.trainloaderfull = DataLoader(train_data, self.train_samples)
         self.iter_trainloader = iter(self.trainloader)
         self.iter_testloader = iter(self.testloader)
-
-        # those parameters are for persionalized federated learing.
         self.local_model = copy.deepcopy(list(self.model.parameters()))
+        # those parameters are for persionalized federated learing.
+        self.local_model_x = copy.deepcopy(model)
+        for param in self.local_model_x.parameters():
+            param.data = torch.zeros_like(param.data)
+        # self.local_model_x_old = copy.deepcopy(model)
+        # for param in self.local_model_x_old.parameters():
+        #     param.data = torch.zeros_like(param.data)
+        self.local_dual_z = copy.deepcopy(model)
+        for param in self.local_dual_z.parameters():
+            param.data = torch.zeros_like(param.data)
+        # self.local_dual_z_old = copy.deepcopy(model)
+        # for param in self.local_dual_z_old.parameters():
+        #     param.data = torch.zeros_like(param.data)
+
         self.persionalized_model = copy.deepcopy(list(self.model.parameters()))
         self.persionalized_model_bar = copy.deepcopy(list(self.model.parameters()))
     
@@ -58,7 +71,7 @@ class User:
         for param , new_param in zip(self.model.parameters(), new_params):
             param.data = new_param.data.clone()
 
-    def get_grads(self):
+    def get_gradget_parameterss(self):
         grads = []
         for param in self.model.parameters():
             if param.grad is None:
@@ -68,11 +81,11 @@ class User:
         return grads
 
     def test(self):
-        self.model.eval()
+        self.local_model_x.eval()
         test_acc = 0
         for x, y in self.testloaderfull:
             x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
+            output = self.local_model_x(x)
             test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             #@loss += self.loss(output, y)
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
@@ -80,12 +93,12 @@ class User:
         return test_acc, y.shape[0]
 
     def train_error_and_loss(self):
-        self.model.eval()
+        self.local_model_x.eval()
         train_acc = 0
         loss = 0
         for x, y in self.trainloaderfull:
             x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
+            output = self.local_model_x(x)
             train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             loss += self.loss(output, y)
             #print(self.id + ", Train Accuracy:", train_acc)
@@ -98,7 +111,7 @@ class User:
         self.update_parameters(self.persionalized_model_bar)
         for x, y in self.testloaderfull:
             x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
+            output = self.local_model_x(x)
             test_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             #@loss += self.loss(output, y)
             #print(self.id + ", Test Accuracy:", test_acc / y.shape[0] )
@@ -113,7 +126,7 @@ class User:
         self.update_parameters(self.persionalized_model_bar)
         for x, y in self.trainloaderfull:
             x, y = x.to(self.device), y.to(self.device)
-            output = self.model(x)
+            output = self.local_model_x(x)
             train_acc += (torch.sum(torch.argmax(output, dim=1) == y)).item()
             loss += self.loss(output, y)
             #print(self.id + ", Train Accuracy:", train_acc)
@@ -154,3 +167,37 @@ class User:
     @staticmethod
     def model_exists():
         return os.path.exists(os.path.join("models", "server" + ".pt"))
+
+    def update_X(self):
+        X = ()
+        for param in self.model.named_parameters():
+            X += (param.detach().cpu().clone(),)
+        return X
+
+    def update_Z(X, U, args):
+        new_Z = ()
+        for x, u in zip(X, U):
+            z = x + u
+        return new_Z
+
+    def update_Z_l1(X, U, args):
+        new_Z = ()
+        delta = args.alpha / args.rho
+        for x, u in zip(X, U):
+            z = x + u
+            new_z = z.clone()
+            if (z > delta).sum() != 0:
+                new_z[z > delta] = z[z > delta] - delta
+            if (z < -delta).sum() != 0:
+                new_z[z < -delta] = z[z < -delta] + delta
+            if (abs(z) <= delta).sum() != 0:
+                new_z[abs(z) <= delta] = 0
+            new_Z += (new_z,)
+        return new_Z
+
+    def update_U(U, X, Z):
+        new_U = ()
+        for u, x, z in zip(U, X, Z):
+            new_u = u + x - z
+            new_U += (new_u,)
+        return new_U
