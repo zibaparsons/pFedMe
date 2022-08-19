@@ -58,10 +58,10 @@ class UserpFedMe(User):
                     # param_x_old.data = param_x.data
                     # param_z_old.data = param_z.data
 
-                    param_x.data = param_y.data - self.learning_rate * param_x.grad.data
-                    param_z.data = param_z.data + 1 / self.learning_rate * (param_x.data - param_y.data)
+                    param_x.data = param_y.data - self.learning_rate * (param_x.grad.data - param_z.data) #* param_x.grad.data #
+                    param_z.data = param_z.data + self.beta / self.learning_rate * (param_x.data - param_y.data)
                     param_y.data = param_y.data + 1 / num_users * (
-                            param_x.data - param_z.data * self.learning_rate * self.beta - param_x_old.data + param_z_old.data * self.learning_rate * self.beta)
+                            param_x.data - param_z.data * self.learning_rate / self.beta - param_x_old.data + param_z_old.data * self.learning_rate / self.beta)
 
             persionalized_model_bar = copy.copy(self.local_model_x)
 
