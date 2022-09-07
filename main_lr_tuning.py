@@ -16,17 +16,22 @@ from utils.plot_utils import *
 import torch
 torch.manual_seed(0)
 
+# 09/07/2022
+# Modified by Ziba Parsons
+
+# In this version of main function, the learning rate and personalized_learning rate are omitted as inputs and
+# are fine tuned using linear search in the range of [0.01 0.02 ... 1.0] - both take similar values in each step of fine tuning
+
 #added by zp
 import time
+# os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
-def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters,
-         local_epochs, optimizer, numusers, K, personal_learning_rate, times, gpu):
+def main(dataset, algorithm, model, batch_size, beta, lamda, num_glob_iters,
+         local_epochs, optimizer, numusers, K, times, gpu): # learning rate is omitted as input
+
 
     # Get device status: Check GPU or CPU
     device = torch.device("cuda:{}".format(gpu) if torch.cuda.is_available() and gpu != -1 else "cpu")
-
-    # added by zp
-    start_time = time.time()
 
 
     for i in range(times):
@@ -50,40 +55,23 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
             else: 
                 model = DNN(60,20,10).to(device), model
 
-        # select algorithm
-        if(algorithm == "FedAvg"):
-            server = FedAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
-        
-        if(algorithm == "pFedMe"):
-            server = pFedMe(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, K, personal_learning_rate, i)
-
-        if(algorithm == "PerAvg"):
-            server = PerAvg(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
-
-        if(algorithm == "FedSRWADMM"):
-
-            server = FedSRWADMM(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, i)
-
-        if(algorithm == "pFedMe_ADMM"):
-            server = pFedMe_ADMM(device, dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_glob_iters, local_epochs, optimizer,numusers, K, personal_learning_rate, i)
-
-
-        server.train()
-        server.test()
-
-
-    # Average data 
-    if(algorithm == "PerAvg"):
-        algorithm == "PerAvg_p"
-    if(algorithm == "pFedMe"):
-        average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-    average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms=algorithm, batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
-
-    # added by zp
-    finish_time = time.time()
-    time_diff = finish_time - start_time
-    print("---------------------------------")
-    print("The elapsed duration is: ", "{:.2f}".format(time_diff), "seconds. \n")
+        # fine tuning learning rate
+        start_time = time.time()
+        for lr in np.arange(0.01, 1.0, 0.01):
+            server = pFedMe(device, dataset, algorithm, model, batch_size, lr, beta, lamda, num_glob_iters, local_epochs, optimizer, numusers, K, lr, i)
+            server.train()
+            server.test()
+            # Average data
+            if(algorithm == "pFedMe"):
+                average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=lr, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = lr ,times = times)
+            average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,
+                         learning_rate=lr, beta=beta, algorithms=algorithm, batch_size=batch_size,
+                         dataset=dataset, k=K, personal_learning_rate=lr, times=times)
+            # added by zp
+            finish_time = time.time()
+            time_diff = finish_time - start_time
+            print("---------------------------------")
+            print("The elapsed duration is: ", "{:.2f}".format(time_diff), "seconds. \n")
 
 
 if __name__ == "__main__":
@@ -91,16 +79,16 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="Cifar10", choices=["Mnist", "Synthetic", "Cifar10"])
     parser.add_argument("--model", type=str, default="cnn", choices=["dnn", "mclr", "cnn"])
     parser.add_argument("--batch_size", type=int, default=20)
-    parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
+    # parser.add_argument("--learning_rate", type=float, default=0.005, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=1.0, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
     parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
     parser.add_argument("--num_global_iters", type=int, default=20)
     parser.add_argument("--local_epochs", type=int, default=5)
     parser.add_argument("--optimizer", type=str, default="SGD")
-    parser.add_argument("--algorithm", type=str, default="FedSRWADMM",choices=["pFedMe", "PerAvg", "FedAvg","FedSRWADMM","pFedMe_ADMM"])
+    parser.add_argument("--algorithm", type=str, default="pFedMe", choices=["pFedMe", "PerAvg", "FedAvg","FedSRWADMM","pFedMe_ADMM"])
     parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
-    parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
+    # parser.add_argument("--personal_learning_rate", type=float, default=0.09, help="Persionalized learning rate to caculate theta aproximately using K steps")
     parser.add_argument("--times", type=int, default=5, help="running time")
     parser.add_argument("--gpu", type=int, default=0, help="Which GPU to run the experiments, -1 mean CPU, 0,1,2 for GPU")
     args = parser.parse_args()
@@ -109,7 +97,7 @@ if __name__ == "__main__":
     print("Summary of training process:")
     print("Algorithm: {}".format(args.algorithm))
     print("Batch size: {}".format(args.batch_size))
-    print("Learing rate       : {}".format(args.learning_rate))
+    # print("Learing rate       : {}".format(args.learning_rate))
     print("Average Moving       : {}".format(args.beta))
     print("Subset of users      : {}".format(args.numusers))
     print("Number of global rounds       : {}".format(args.num_global_iters))
@@ -123,7 +111,7 @@ if __name__ == "__main__":
         algorithm = args.algorithm,
         model=args.model,
         batch_size=args.batch_size,
-        learning_rate=args.learning_rate,
+        # learning_rate=args.learning_rate,
         beta = args.beta, 
         lamda = args.lamda,
         num_glob_iters=args.num_global_iters,
@@ -131,7 +119,7 @@ if __name__ == "__main__":
         optimizer= args.optimizer,
         numusers = args.numusers,
         K=args.K,
-        personal_learning_rate=args.personal_learning_rate,
+        # personal_learning_rate=args.personal_learning_rate,
         times = args.times,
         gpu=args.gpu
         )

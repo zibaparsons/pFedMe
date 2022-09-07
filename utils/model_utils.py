@@ -94,8 +94,8 @@ def read_cifa_data():
     NUM_USERS = 20 # should be muitiple of 10
     NUM_LABELS = 3
     # Setup directory for train/test data
-    train_path = './data/train/cifa_train_100.json'
-    test_path = './data/test/cifa_test_100.json'
+    train_path = './data/Cifar10/train/cifa_train_100.json'
+    test_path = './data/Cifar10/test/cifa_test_100.json'
     dir_path = os.path.dirname(train_path)
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
