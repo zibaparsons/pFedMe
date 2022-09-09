@@ -1,6 +1,8 @@
+import numpy as np
+import sklearn
+print(sklearn.__version__)
 from sklearn.datasets import fetch_openml
 from tqdm import trange
-import numpy as np
 import random
 import json
 import os
@@ -21,6 +23,7 @@ if not os.path.exists(dir_path):
 
 # Get MNIST data, normalize, and divide by level
 mnist = fetch_openml('mnist_784', data_home='./data')
+mnist
 mu = np.mean(mnist.data.astype(np.float32), 0)
 sigma = np.std(mnist.data.astype(np.float32), 0)
 mnist.data = (mnist.data.astype(np.float32) - mu)/(sigma+0.001)
@@ -53,6 +56,7 @@ def ram_dom_gen(total, size):
     temp.append(total)
     print(temp)
     return temp
+
 number_sample = []
 for total_value, count in zip(mnist_data, counts):
     temp = ram_dom_gen(len(total_value), count)
