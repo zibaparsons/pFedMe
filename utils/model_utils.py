@@ -267,7 +267,7 @@ def read_data(dataset):
     test_data = {}
 
     train_files = os.listdir(train_data_dir)
-    train_files = [f for f in train_files if f.endswith('*.json')]
+    train_files = [f for f in train_files if f.endswith('.json')]
     for f in train_files:
         file_path = os.path.join(train_data_dir, f)
         with open(file_path, 'r') as inf:
