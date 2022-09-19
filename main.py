@@ -47,6 +47,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
         if(model == "dnn"):
             if(dataset == "Mnist"):
                 model = DNN().to(device), model
+            # elif (dataset == "Cifar10"):
+            #     model = DNN(1024,100,10).to(device), model # Added by zp
             else: 
                 model = DNN(60,20,10).to(device), model
 
@@ -75,8 +77,8 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
     # Average data 
     if(algorithm == "PerAvg"):
         algorithm == "PerAvg_p"
-    if(algorithm == "pFedMe"):
-        average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
+    # if(algorithm == "pFedMe"):
+    #     average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms="pFedMe_p", batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
     average_data(num_users=numusers, loc_ep1=local_epochs, Numb_Glob_Iters=num_glob_iters, lamb=lamda,learning_rate=learning_rate, beta = beta, algorithms=algorithm, batch_size=batch_size, dataset=dataset, k = K, personal_learning_rate = personal_learning_rate,times = times)
 
     # added by zp
@@ -88,17 +90,17 @@ def main(dataset, algorithm, model, batch_size, learning_rate, beta, lamda, num_
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="Synthetic", choices=["Mnist", "Synthetic", "Cifar10"])
-    parser.add_argument("--model", type=str, default="mclr", choices=["dnn", "mclr", "cnn"])
+    parser.add_argument("--dataset", type=str, default="Mnist", choices=["Mnist", "Synthetic", "Cifar10"])
+    parser.add_argument("--model", type=str, default="dnn", choices=["dnn", "mclr", "cnn"])
     parser.add_argument("--batch_size", type=int, default=20)
     parser.add_argument("--learning_rate", type=float, default=0.01, help="Local learning rate")
     parser.add_argument("--beta", type=float, default=0.01, help="Average moving parameter for pFedMe, or Second learning rate of Per-FedAvg")
-    parser.add_argument("--lamda", type=int, default=15, help="Regularization term")
-    parser.add_argument("--num_global_iters", type=int, default=20)
-    parser.add_argument("--local_epochs", type=int, default=5)
+    parser.add_argument("--lamda", type=int, default=30, help="Regularization term")
+    parser.add_argument("--num_global_iters", type=int, default=800)
+    parser.add_argument("--local_epochs", type=int, default=20)
     parser.add_argument("--optimizer", type=str, default="SGD")
     parser.add_argument("--algorithm", type=str, default="pFedMe",choices=["pFedMe", "PerAvg", "FedAvg","FedSRWADMM","pFedMe_ADMM"])
-    parser.add_argument("--numusers", type=int, default=20, help="Number of Users per round")
+    parser.add_argument("--numusers", type=int, default=10, help="Number of Users per round")
     parser.add_argument("--K", type=int, default=5, help="Computation steps")
     parser.add_argument("--personal_learning_rate", type=float, default=0.01, help="Persionalized learning rate to caculate theta aproximately using K steps")
     parser.add_argument("--times", type=int, default=1, help="running time")

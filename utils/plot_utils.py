@@ -88,6 +88,8 @@ def average_data(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb="", learning
             hf.create_dataset('rs_train_loss', data=train_loss_data)
             hf.close()
 
+
+
 def plot_summary_one_figure(num_users=100, loc_ep1=5, Numb_Glob_Iters=10, lamb=[], learning_rate=[], beta=[], algorithms_list=[], batch_size=0, dataset = "", k = [], personal_learning_rate = []):
     Numb_Algs = len(algorithms_list)
     dataset = dataset
@@ -177,267 +179,8 @@ def average_smooth(data, window_len=20, window='hanning'):
         results.append(y[window_len-1:])
     return np.array(results)
 
-def plot_summary_one_figure_synthetic_R(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    
-    
-    linestyles = ['-','-','-','-.','-.','-.']
-    print(lamb)
-    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'w']
-    markers = ["o","v","s","*","x","P"]
-    plt.figure(1,figsize=(5, 5))
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], label=label + ": "
-                 r'$R = $' +str(loc_ep1[i]), linewidth = 1, color=colors[i], marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    plt.ylim([train_loss.min() - 0.01,  2])
-    #plt.ylim([0.5,  1.8])
-    plt.savefig(dataset.upper() + "Non_Convex_Syn_fixR.pdf", bbox_inches="tight")
+#################################    Cifar10    ########################################
 
-    plt.figure(2,figsize=(5, 5))
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], label=label + ": "
-                 r'$R = $' +str(loc_ep1[i]), linewidth = 1, color=colors[i], marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='lower right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.6,  0.86])
-    #plt.ylim([0.89,  0.945])
-    plt.savefig(dataset.upper() + "Non_Convex_Syn_fixR_test.pdf", bbox_inches="tight")
-    #plt.savefig(dataset.upper() + "Convex_Syn_fixR.pdf", bbox_inches="tight")
-    plt.close()
-
-def plot_summary_one_figure_synthetic_K(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    
-    linestyles = ['-','-','-','-.','-.','-.']
-    print(lamb)
-    colors = ['tab:blue', 'tab:green','darkorange', 'r', 'c', 'tab:brown', 'w']
-    markers = ["o","v","s","*","x","P"]
-    plt.figure(1,figsize=(5, 5))
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 r'$K = $' +str(k[i]), linewidth = 1, color=colors[i], marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    #plt.ylim([0.5,  1.8])
-    plt.ylim([train_loss.min() - 0.01,  2])
-    #plt.savefig(dataset.upper() + "Non_Convex_Syn_fixK.pdf", bbox_inches="tight")
-    plt.savefig(dataset.upper() + "Convex_Syn_fixK.pdf", bbox_inches="tight")
-    plt.figure(2,figsize=(5, 5))
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 r'$K = $' +str(k[i]), linewidth = 1, color=colors[i], marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='lower right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.6,  0.86])
-    plt.savefig(dataset.upper() + "Convex_Syn_fixK_test.pdf", bbox_inches="tight")
-    plt.close()
-
-def plot_summary_one_figure_synthetic_L(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    
-    linestyles = ['-','-','-','-.','-.','-.']
-    markers = ["o","v","s","*","x","P"]
-    print(lamb)
-    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'm']
-    plt.figure(1,figsize=(5, 5))
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 + r'$\lambda = $'+ str(lamb[i]), linewidth = 1, color=colors[i],marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.5,  1.8])
-    #plt.ylim([train_loss.min() - 0.01,  2])
-    #plt.savefig(dataset.upper() + "Non_Convex_Syn_fixL.pdf", bbox_inches="tight")
-    plt.savefig(dataset.upper() + "Convex_Syn_fixL.pdf", bbox_inches="tight")
-    plt.figure(2,figsize=(5, 5))
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 + r'$\lambda = $'+ str(lamb[i]), linewidth = 1, color=colors[i],marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='lower right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.6,  0.86])
-    plt.savefig(dataset.upper() + "Convex_Syn_fixL_test.pdf", bbox_inches="tight")
-    plt.close()
-
-def plot_summary_one_figure_synthetic_D(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    
-    linestyles = ['-','-','-','-.','-.','-.']
-    markers = ["o","v","s","*","x","P"]
-    print(lamb)
-    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'm']
-    plt.figure(1,figsize=(5, 5))
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 + r'$\lambda = $'+ str(lamb[i]), linewidth = 1, color=colors[i],marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.5,  1.8])
-    #plt.ylim([train_loss.min() - 0.01,  2])
-    #plt.savefig(dataset.upper() + "Non_Convex_Syn_fixL.pdf", bbox_inches="tight")
-    plt.savefig(dataset.upper() + "Convex_Syn_fixL.pdf", bbox_inches="tight")
-    plt.figure(2,figsize=(5, 5))
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
-                 + r'$\lambda = $'+ str(lamb[i]), linewidth = 1, color=colors[i],marker = markers[i],markevery=0.05, markersize=5)
-    plt.legend(loc='lower right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    plt.ylim([0.6,  0.86])
-    plt.savefig(dataset.upper() + "Convex_Syn_fixL_test.pdf", bbox_inches="tight")
-    plt.close()
-
-def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    for i in range(Numb_Algs):
-        print("max accurancy:", train_acc_[i].max())
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    linestyles = ['-', '--', '-.','-', '--', '-.']
-    linestyles = ['-','-','-','-','-','-','-']
-    #linestyles = ['-','-','-','-','-','-','-']
-    markers = ["o","v","s","*","x","P"]
-    print(lamb)
-    colors = ['tab:blue', 'tab:green', 'r', 'darkorange', 'tab:brown', 'm']
-    plt.figure(1,figsize=(5, 5))
-    plt.title("$\mu-$"+ "strongly convex")
-    # plt.title("Nonconvex") # for non convex case
-    plt.grid(True)
-
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    # plt.ylim([0.5,  1.8]) # convex
-    plt.ylim([1.0,  5.0]) # convex
-
-    #plt.ylim([0.4,  1.8]) # non convex
-    #plt.ylim([train_loss.min() - 0.01,  2])
-    #plt.savefig(dataset.upper() + "Non_Convex_Syn_train_Com.pdf", bbox_inches="tight")
-    plt.savefig(dataset.upper() + "Convex_Syn_train_Com.pdf", bbox_inches="tight")
-    plt.figure(2,figsize=(5, 5))
-    plt.title("$\mu-$"+ "strongly convex")
-    # plt.title("Nonconvex") # for non convex case
-    plt.grid(True)
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i],label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    # plt.ylim([0.5,  0.86]) # convex
-    plt.ylim([0.1, 0.9])  # convex
-    #plt.savefig(dataset.upper() + "Non_Convex_Syn_test_Com.pdf", bbox_inches="tight")
-    plt.savefig(dataset.upper() + "Convex_Syn_test_Com.pdf", bbox_inches="tight")
-    plt.close()
-
-
-def plot_summary_one_figure_mnist_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
-    Numb_Algs = len(algorithms_list)   
-    dataset = dataset
-    
-    glob_acc_, train_acc_, train_loss_ = get_training_data_value( num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate )
-    for i in range(Numb_Algs):
-        print("max accurancy:", glob_acc_[i].max())
-    glob_acc =  average_smooth(glob_acc_, window='flat')
-    train_loss = average_smooth(train_loss_, window='flat')
-    train_acc = average_smooth(train_acc_, window='flat')
-    
-    linestyles = ['-', '--', '-.','-', '--', '-.']
-    linestyles = ['-','-','-','-','-','-','-']
-    #linestyles = ['-','-','-','-','-','-','-']
-    markers = ["o","v","s","*","x","P"]
-    print(lamb)
-    colors = ['tab:blue', 'tab:green', 'r', 'darkorange', 'tab:brown', 'm']
-    plt.figure(1,figsize=(5, 5))
-    plt.title("$\mu-$"+ "strongly convex")
-    # plt.title("Nonconvex") # for non convex case
-    plt.grid(True)
-    # training loss
-    marks = []
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
-    plt.legend(loc='upper right')
-    plt.ylabel('Training Loss')
-    plt.xlabel('Global rounds')
-    #plt.ylim([0.05,  0.6]) # non convex-case
-    plt.ylim([0.19,  0.4]) # convex-case
-    plt.gca().yaxis.set_major_formatter(StrMethodFormatter('{x:,.2f}')) # 2 decimal places
-    plt.savefig(dataset.upper() + "Convex_Mnist_train_Com.pdf", bbox_inches="tight")
-    #plt.savefig(dataset.upper() + "Non_Convex_Mnist_train_Com.pdf", bbox_inches="tight")
-    plt.figure(2,figsize=(5, 5))
-    plt.title("$\mu-$"+ "strongly convex")
-    # plt.title("Nonconvex") # for non convex case
-    plt.grid(True)
-    # Global accurancy
-    for i in range(Numb_Algs):
-        label = get_label_name(algorithms_list[i])
-        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label, linewidth = 1, color=colors[i],marker = markers[i],markevery=0.2, markersize=5)
-    plt.legend(loc='lower right')
-    plt.ylabel('Test Accuracy')
-    plt.xlabel('Global rounds')
-    #plt.ylim([0.84,  0.98]) # non convex-case
-    plt.ylim([0.88,  0.95]) # Convex-case
-    plt.savefig(dataset.upper() + "Convex_Mnist_test_Com.pdf", bbox_inches="tight")
-    #plt.savefig(dataset.upper() + "Non_Convex_Mnist_test_Com.pdf", bbox_inches="tight")
-    plt.close()
-
-# Added by ZP
 def plot_summary_one_figure_cifar10_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
     Numb_Algs = len(algorithms_list)
     dataset = dataset
@@ -489,9 +232,301 @@ def plot_summary_one_figure_cifar10_Compare(num_users, loc_ep1, Numb_Glob_Iters,
     plt.close()
 
 
+################################    Synthetic    ########################################
+
+def plot_summary_one_figure_synthetic_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta,
+                                              algorithms_list, batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
+    for i in range(Numb_Algs):
+        print("max accurancy:", train_acc_[i].max())
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+    linestyles = ['-', '--', '-.', '-', '--', '-.']
+    linestyles = ['-', '-', '-', '-', '-', '-', '-']
+    # linestyles = ['-','-','-','-','-','-','-']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'darkorange', 'tab:brown', 'm']
+    plt.figure(1, figsize=(5, 5))
+    plt.title("$\mu-$" + "strongly convex")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth=1, color=colors[i],
+                 marker=markers[i], markevery=0.2, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.5,  1.8]) # convex
+    plt.ylim([1.0, 5.0])  # convex
+
+    # plt.ylim([0.4,  1.8]) # non convex
+    # plt.ylim([train_loss.min() - 0.01,  2])
+    # plt.savefig(dataset.upper() + "Non_Convex_Syn_train_Com.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "_Convex_train_Com.pdf", bbox_inches="tight")
+    plt.figure(2, figsize=(5, 5))
+    plt.title("$\mu-$" + "strongly convex")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label, linewidth=1, color=colors[i], marker=markers[i],
+                 markevery=0.2, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.5,  0.86]) # convex
+    plt.ylim([0.1, 1.0])  # convex
+    # plt.savefig(dataset.upper() + "Non_Convex_Syn_test_Com.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "_Convex_test_Com.pdf", bbox_inches="tight")
+    plt.close()
 
 
+def plot_summary_one_figure_synthetic_R(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list,
+                                        batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
 
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+
+    linestyles = ['-', '-', '-', '-.', '-.', '-.']
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'w']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    plt.figure(1, figsize=(5, 5))
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], label=label + ": "
+                                                  r'$R = $' + str(loc_ep1[i]), linewidth=1, color=colors[i],
+                 marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    plt.ylim([train_loss.min() - 0.01, 2])
+    # plt.ylim([0.5,  1.8])
+    plt.savefig(dataset.upper() + "Non_Convex_Syn_fixR.pdf", bbox_inches="tight")
+
+    plt.figure(2, figsize=(5, 5))
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], label=label + ": "
+                                                r'$R = $' + str(loc_ep1[i]), linewidth=1, color=colors[i],
+                 marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='lower right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.6, 0.86])
+    # plt.ylim([0.89,  0.945])
+    plt.savefig(dataset.upper() + "Non_Convex_Syn_fixR_test.pdf", bbox_inches="tight")
+    # plt.savefig(dataset.upper() + "Convex_Syn_fixR.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_summary_one_figure_synthetic_K(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list,
+                                        batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
+
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+
+    linestyles = ['-', '-', '-', '-.', '-.', '-.']
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'darkorange', 'r', 'c', 'tab:brown', 'w']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    plt.figure(1, figsize=(5, 5))
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                           r'$K = $' + str(k[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.5,  1.8])
+    plt.ylim([train_loss.min() - 0.01, 2])
+    # plt.savefig(dataset.upper() + "Non_Convex_Syn_fixK.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "Convex_Syn_fixK.pdf", bbox_inches="tight")
+    plt.figure(2, figsize=(5, 5))
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                         r'$K = $' + str(k[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='lower right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.6, 0.86])
+    plt.savefig(dataset.upper() + "Convex_Syn_fixK_test.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_summary_one_figure_synthetic_L(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list,
+                                        batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
+
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+
+    linestyles = ['-', '-', '-', '-.', '-.', '-.']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'm']
+    plt.figure(1, figsize=(5, 5))
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                   + r'$\lambda = $' + str(lamb[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.5, 1.8])
+    # plt.ylim([train_loss.min() - 0.01,  2])
+    # plt.savefig(dataset.upper() + "Non_Convex_Syn_fixL.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "Convex_Syn_fixL.pdf", bbox_inches="tight")
+    plt.figure(2, figsize=(5, 5))
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                 + r'$\lambda = $' + str(lamb[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='lower right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.6, 0.86])
+    plt.savefig(dataset.upper() + "Convex_Syn_fixL_test.pdf", bbox_inches="tight")
+    plt.close()
+
+
+def plot_summary_one_figure_synthetic_D(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list,
+                                        batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
+
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+
+    linestyles = ['-', '-', '-', '-.', '-.', '-.']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'c', 'darkorange', 'tab:brown', 'm']
+    plt.figure(1, figsize=(5, 5))
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                   + r'$\lambda = $' + str(lamb[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.5, 1.8])
+    # plt.ylim([train_loss.min() - 0.01,  2])
+    # plt.savefig(dataset.upper() + "Non_Convex_Syn_fixL.pdf", bbox_inches="tight")
+    plt.savefig(dataset.upper() + "Convex_Syn_fixL.pdf", bbox_inches="tight")
+    plt.figure(2, figsize=(5, 5))
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label + ": "
+                                                                 + r'$\lambda = $' + str(lamb[i]), linewidth=1,
+                 color=colors[i], marker=markers[i], markevery=0.05, markersize=5)
+    plt.legend(loc='lower right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    plt.ylim([0.6, 0.86])
+    plt.savefig(dataset.upper() + "Convex_Syn_fixL_test.pdf", bbox_inches="tight")
+    plt.close()
+
+
+####################################    MNIST    ################################################
+def plot_summary_one_figure_mnist_Compare(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta,
+                                          algorithms_list, batch_size, dataset, k, personal_learning_rate):
+    Numb_Algs = len(algorithms_list)
+    dataset = dataset
+
+    glob_acc_, train_acc_, train_loss_ = get_training_data_value(num_users, loc_ep1, Numb_Glob_Iters, lamb,
+                                                                 learning_rate, beta, algorithms_list, batch_size,
+                                                                 dataset, k, personal_learning_rate)
+    for i in range(Numb_Algs):
+        print("max accurancy:", glob_acc_[i].max())
+    glob_acc = average_smooth(glob_acc_, window='flat')
+    train_loss = average_smooth(train_loss_, window='flat')
+    train_acc = average_smooth(train_acc_, window='flat')
+
+    linestyles = ['-', '--', '-.', '-', '--', '-.']
+    linestyles = ['-', '-', '-', '-', '-', '-', '-']
+    # linestyles = ['-','-','-','-','-','-','-']
+    markers = ["o", "v", "s", "*", "x", "P"]
+    print(lamb)
+    colors = ['tab:blue', 'tab:green', 'r', 'darkorange', 'tab:brown', 'm']
+    plt.figure(1, figsize=(5, 5))
+    plt.title("$\mu-$" + "strongly convex")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+    # training loss
+    marks = []
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(train_loss[i, 1:], linestyle=linestyles[i], label=label, linewidth=1, color=colors[i],
+                 marker=markers[i], markevery=0.2, markersize=5)
+    plt.legend(loc='upper right')
+    plt.ylabel('Training Loss')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.05,  0.6]) # non convex-case
+    plt.ylim([0.19, 0.4])  # convex-case
+    plt.gca().yaxis.set_major_formatter(StrMethodFormatter('{x:,.2f}'))  # 2 decimal places
+    plt.savefig(dataset.upper() + "Convex_Mnist_train_Com.pdf", bbox_inches="tight")
+    # plt.savefig(dataset.upper() + "Non_Convex_Mnist_train_Com.pdf", bbox_inches="tight")
+    plt.figure(2, figsize=(5, 5))
+    plt.title("$\mu-$" + "strongly convex")
+    # plt.title("Nonconvex") # for non convex case
+    plt.grid(True)
+    # Global accurancy
+    for i in range(Numb_Algs):
+        label = get_label_name(algorithms_list[i])
+        plt.plot(glob_acc[i, 1:], linestyle=linestyles[i], label=label, linewidth=1, color=colors[i], marker=markers[i],
+                 markevery=0.2, markersize=5)
+    plt.legend(loc='lower right')
+    plt.ylabel('Test Accuracy')
+    plt.xlabel('Global rounds')
+    # plt.ylim([0.84,  0.98]) # non convex-case
+    plt.ylim([0.88, 0.95])  # Convex-case
+    plt.savefig(dataset.upper() + "Convex_Mnist_test_Com.pdf", bbox_inches="tight")
+    # plt.savefig(dataset.upper() + "Non_Convex_Mnist_test_Com.pdf", bbox_inches="tight")
+    plt.close()
 
 def plot_summary_one_figure_mnist_K(num_users, loc_ep1, Numb_Glob_Iters, lamb, learning_rate, beta, algorithms_list, batch_size, dataset, k, personal_learning_rate):
     Numb_Algs = len(algorithms_list)   
