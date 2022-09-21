@@ -259,8 +259,8 @@ def read_data(dataset):
         clients, groups, train_data, test_data = read_cifa_data()
         return clients, groups, train_data, test_data
 
-    train_data_dir = os.path.join('data',dataset,'data', 'train')
-    test_data_dir = os.path.join('data',dataset,'data', 'test')
+    train_data_dir = os.path.join('../data',dataset,'data', 'train')
+    test_data_dir = os.path.join('../data',dataset,'data', 'test')
     clients = []
     groups = []
     train_data = {}
