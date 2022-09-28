@@ -132,7 +132,7 @@ class Server:
             alg = alg + "_" + str(self.K) + "_" + str(self.personal_learning_rate)
         alg = alg + "_" + str(self.times)
         if (len(self.rs_glob_acc) != 0 &  len(self.rs_train_acc) & len(self.rs_train_loss)) :
-            with h5py.File("../results/synthetic/h5files/"+'{}.h5'.format(alg, self.local_epochs), 'w') as hf:
+            with h5py.File("../results/lrTuning/Mnist/h5files/"+'{}.h5'.format(alg, self.local_epochs), 'w') as hf:
                 hf.create_dataset('rs_glob_acc', data=self.rs_glob_acc)
                 hf.create_dataset('rs_train_acc', data=self.rs_train_acc)
                 hf.create_dataset('rs_train_loss', data=self.rs_train_loss)
