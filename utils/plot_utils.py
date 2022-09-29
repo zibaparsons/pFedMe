@@ -8,7 +8,7 @@ plt.rcParams.update({'font.size': 14})
 
 def simple_read_data(alg):
     print(alg)
-    hf = h5py.File("../results/lrTuning//h5files/"+'{}.h5'.format(alg), 'r')
+    hf = h5py.File("../results/lrTuning/Mnist/h5files/"+'{}.h5'.format(alg), 'r')
     rs_glob_acc = np.array(hf.get('rs_glob_acc')[:])
     rs_train_acc = np.array(hf.get('rs_train_acc')[:])
     rs_train_loss = np.array(hf.get('rs_train_loss')[:])
